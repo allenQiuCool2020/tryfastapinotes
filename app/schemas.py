@@ -6,6 +6,7 @@ class NoteCreate(BaseModel):
     content: str
     weather: str | None = None
 
+
 class NoteRead(NoteCreate):
     model_config = ConfigDict(from_attributes=True)
 
@@ -13,9 +14,17 @@ class NoteRead(NoteCreate):
     created_at: datetime
     created_by: int
 
+
+class NoteUpdate(BaseModel):
+    title: str | None = None
+    content: str | None = None
+    weather: str | None = None
+
+
 class UserCreate(BaseModel):
     username: str
     password: str
+
 
 class UserRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)

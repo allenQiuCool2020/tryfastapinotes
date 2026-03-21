@@ -53,3 +53,27 @@ def get_notes(db: Session):
 
 def get_note(db: Session, note_id: int):
     return db.query(models.Note).filter(models.Note.id == note_id).first()
+
+
+def update_note(db: Session, note_id: int, note_update: schemas.NoteUpdate):
+    db_note = get_note(db, note_id=note_id)
+    if db_note is None:
+        return None
+    if note_update.title is not None:
+        db_note.title = note_update.title
+    if note_update.content is not None:
+        db_note.content = note_update.content
+    if note_update.weather is not None:
+        db_note.weather = note_update.weather
+    db.commit()
+    db.refresh(db_note)
+    return db_note
+
+
+def delete_note(db: Session, note_id: int):
+    db_note = get_note(db, note_id=note_id)
+    if db_note is None:
+        return None
+    db.delete(db_note)
+    db.commit()
+    return db_note

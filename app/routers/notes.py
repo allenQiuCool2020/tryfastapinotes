@@ -23,3 +23,33 @@ def read_note(note_id: int, db: Session = Depends(get_db)):
     if db_note is None:
         raise HTTPException(status_code=404, detail="Note not found")
     return db_note
+
+
+@router.patch("/{note_id}", response_model=schemas.NoteRead)
+def update_note(
+    note_id: int,
+    note_update: schemas.NoteUpdate,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    db_note = crud.get_note(db=db, note_id=note_id)
+    if db_note is None:
+        raise HTTPException(status_code=404, detail="Note not found")
+    if db_note.created_by != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized to update this note")
+    return crud.update_note(db=db, note_id=note_id, note_update=note_update)
+
+
+@router.delete("/{note_id}")
+def delete_note(
+    note_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    db_note = crud.get_note(db=db, note_id=note_id)
+    if db_note is None:
+        raise HTTPException(status_code=404, detail="Note not found")
+    if db_note.created_by != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized to delete this note")
+    crud.delete_note(db=db, note_id=note_id)
+    return {"detail": "Note deleted successfully"}

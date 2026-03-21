@@ -6,7 +6,7 @@ from jwt.exceptions import InvalidTokenError
 from sqlalchemy.orm import Session
 import jwt
 
-from app import crud, models
+from app import crud, schemas
 from app.database import get_db
 from app.security import ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES, SECRET_KEY, create_access_token
 
