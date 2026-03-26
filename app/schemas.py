@@ -1,10 +1,11 @@
 from datetime import datetime
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 class NoteCreate(BaseModel):
-    title: str
-    content: str
+    title: str = Field(min_length=1)
+    content: str = Field(min_length=1)
     weather: str | None = None
+    summary: str | None = None
 
 
 class NoteRead(NoteCreate):
@@ -16,9 +17,11 @@ class NoteRead(NoteCreate):
 
 
 class NoteUpdate(BaseModel):
-    title: str | None = None
-    content: str | None = None
+    title: str | None = Field(default=None, min_length=1)
+    content: str | None = Field(default=None, min_length=1)
     weather: str | None = None
+    summary: str | None = None
+
 
 
 class UserCreate(BaseModel):
@@ -31,3 +34,8 @@ class UserRead(BaseModel):
 
     id: int
     username: str
+
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str

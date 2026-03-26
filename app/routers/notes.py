@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app import crud, models, schemas
@@ -8,7 +8,7 @@ from app.routers.auth import get_current_user
 router = APIRouter(prefix="/notes", tags=["notes"])
 
 
-@router.post("/", response_model=schemas.NoteRead)
+@router.post("/", response_model=schemas.NoteRead, status_code=status.HTTP_201_CREATED)
 def create_note(
     note: schemas.NoteCreate,
     db: Session = Depends(get_db),
@@ -16,6 +16,11 @@ def create_note(
 ):
     return crud.create_note(db=db, note=note, user_id=current_user.id)
 
+@router.get("/", response_model=list[schemas.NoteRead])
+def read_notes(db: Session = Depends(get_db)):
+    notes = crud.get_notes(db=db)
+    return notes
+    
 
 @router.get("/{note_id}", response_model=schemas.NoteRead)
 def read_note(note_id: int, db: Session = Depends(get_db)):

@@ -12,6 +12,8 @@ class Note(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime)
     created_by: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"))
     weather: Mapped[str | None] = mapped_column(String, nullable=True)
+    summary: Mapped[str | None] = mapped_column(String, nullable=True)
+ 
 
     def __repr__(self) -> str:
         return f"Note(id={self.id!r}, title={self.title!r}, content={self.content!r}, created_at={self.created_at!r}, created_by={self.created_by!r})"

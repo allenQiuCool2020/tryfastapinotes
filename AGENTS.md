@@ -32,6 +32,7 @@ This project uses FastAPI with a simple layered structure.
 # Practical Mindset
 
 - Build one small working slice at a time, then test it in `/docs` or with `curl`.
+- Before writing or expanding automated tests, do a quick manual check in `/docs` for the current slice so request shape, auth flow, and status codes are confirmed first.
 - Prefer clear and simple code over clever abstractions.
 - Match sync vs async to the actual stack. With sync SQLAlchemy `Session`, regular `def` routes are fine.
 - Prefer model or database defaults for fields like timestamps when possible.
@@ -39,6 +40,15 @@ This project uses FastAPI with a simple layered structure.
 - In this project, login returns a JWT token and protected routes should validate that token with `get_current_user`.
 - Public-note design: note reads can stay public, but note creation should require authentication.
 - Prefer best practice by default for implementation, testing, and workflow decisions unless there is a clear learning reason to keep a simpler temporary version first.
+
+# SQLAlchemy Mindset
+
+- Use SQLAlchemy 2.0 style for new query code in this project.
+- Prefer `select(...)` statements over the legacy `db.query(...)` style for newly written CRUD code.
+- For single ORM-object lookups, prefer `db.scalars(stmt).first()`.
+- For list reads, prefer `db.scalars(stmt).all()`.
+- Reserve `db.execute(stmt)` for cases where row-level or mixed-column result handling is actually needed.
+- Keep SQLAlchemy query construction in `app/crud.py`, while routers keep ownership checks, auth checks, and HTTP exceptions.
 
 # Testing Mindset
 
@@ -68,24 +78,51 @@ This project uses FastAPI with a simple layered structure.
 # Current Auth Flow
 
 - `POST /users/` creates a user and stores a hashed password.
+- Password hashing and verification live in `app/security.py` using `pwdlib`.
+- JWT creation lives in `app/security.py`.
+- JWT settings such as `secret_key`, `algorithm`, and token expiry live in `app/settings.py`.
 - `POST /auth/login` verifies username and password, then returns a bearer token.
+- `app/routers/auth.py` provides `get_current_user` by decoding the bearer token, reading the `sub` claim, and loading the matching user from the database.
 - `POST /notes/` is protected and should use `current_user.id` from the token, not a client-provided `user_id`.
+- `GET /notes/` is public in the current product direction and returns a list of public notes.
+- `PATCH /notes/{note_id}` and `DELETE /notes/{note_id}` are protected and enforce owner-only access in `app/routers/notes.py`.
 - `GET /notes/{note_id}` can remain public for this public-notes version of the app.
+- Notes currently support an optional `weather` field in the schema and model.
 
 # Roadmap
 
 ## Current Position
 
-- Current stage: Stage 1, core notes app completion
+- Current stage: Stage 4 migrations completed for the current learning scope
 - Current checkpoint:
-  - user registration works
-  - user read-by-id works
-  - note creation works
-  - note read-by-id works
-  - passwords are hashed
-  - JWT login works
-  - protected note creation uses the authenticated user from the token
-  - public note reads are working for the current public-notes design
+  - Implemented so far:
+    - user registration exists
+    - user read-by-id exists
+    - password hashing is implemented
+    - JWT login is implemented
+    - `Token` response schema is implemented
+    - `POST /auth/login` declares a `response_model`
+    - duplicate-username handling is implemented
+    - basic note title/content validation is implemented
+    - protected note creation uses the authenticated user from the token
+    - public note list works
+    - public note read-by-id works
+    - note update exists
+    - note delete exists
+    - owner-only update/delete rules are enforced
+    - tests cover registration, login, protected note creation, public note reads, duplicate usernames, validation failure, and owner-vs-non-owner authorization flows
+    - Alembic is configured for the project database
+    - an initial Alembic baseline migration exists
+    - a follow-up Alembic migration added `summary` to `notes`
+    - app startup no longer relies on `create_all()` for the main database
+  - Stage status:
+    - Stage 2 features are implemented
+    - Stage 1 feature cleanup is aligned
+    - Stage 3 testing is aligned with the current learning scope
+    - Stage 4 migration learning goals are aligned with the current learning scope
+  - Next focus:
+    - Stage 5 query improvements
+    - optional cleanup of test-database setup if migration-based tests are desired later
 
 ## Stage 1: Finish The Notes App Properly
 
@@ -118,6 +155,24 @@ This project uses FastAPI with a simple layered structure.
   - read note by id works
   - list notes works
 
+Current status for Stage 1:
+- done:
+  - register success
+  - duplicate username test
+  - duplicate username handling
+  - login success
+  - login wrong password fails
+  - create note with token succeeds
+  - create note without token fails
+  - note title/content validation
+  - validation test coverage for invalid note input
+  - public note list endpoint
+  - note list endpoint test
+  - read note by id works
+  - explicit auth response schema for login
+- still open:
+  - none for the current Stage 1 scope
+
 ## Stage 2: Add Authorization Depth
 
 - Add update note endpoint.
@@ -125,6 +180,9 @@ This project uses FastAPI with a simple layered structure.
 - Enforce owner-only update/delete rules.
 - Add tests for owner vs non-owner access.
 - Optionally add a `/users/me/` endpoint if a current-user debug endpoint becomes useful.
+
+Current status for Stage 2:
+- implemented
 
 ## Stage 3: Expand Test Coverage
 
@@ -135,12 +193,33 @@ This project uses FastAPI with a simple layered structure.
   - authorization failures
   - validation errors
 
+Current status for Stage 3:
+- implemented for the current roadmap scope
+- current tests are split across `tests/test_users.py`, `tests/test_notes.py`, and `tests/test_notes_authorization.py`
+- authorization coverage is in place in `tests/test_notes_authorization.py`
+- the current automated suite passes and covers the intended Stage 3 learning slice
+
 ## Stage 4: Learn Migrations
 
 - Introduce Alembic.
 - Create an initial migration for the current schema.
 - Practice a schema evolution change, such as adding a new column.
 - Move away from relying on `create_all` as the long-term schema workflow.
+
+Current status for Stage 4:
+- done:
+  - Alembic installed and initialized
+  - `alembic.ini` points to `sqlite:///./database.db`
+  - `alembic/env.py` imports `Base` and model metadata
+  - initial baseline migration created
+  - follow-up migration created for `summary` on `notes`
+  - `alembic_version` is present in SQLite and tracks the current revision
+  - app startup no longer imports or calls `create_db_and_tables()`
+- lessons learned:
+  - if `alembic.ini` keeps the default placeholder URL, Alembic fails with `NoSuchModuleError` for `sqlalchemy.dialects:driver`
+  - if `alembic/env.py` does not provide `target_metadata`, `--autogenerate` fails because Alembic cannot compare models to the database
+  - if `create_db_and_tables()` is removed from `app/database.py` but still imported in `app/main.py`, the app and tests fail with an import error
+  - adding a new DB field requires wiring across model, schema, and CRUD layers, not just model and schema
 
 ## Stage 5: Add Query Improvements
 
