@@ -138,3 +138,56 @@
 1. Start Stage 5 query improvements.
 2. Consider filtering, pagination, and optional sorting for note lists.
 3. Optionally revisit whether test setup should eventually run through Alembic migrations too.
+
+## 2026-03-27
+
+### Stage 5 completed for current scope
+
+- Added optional `weather` filtering to `GET /notes/`.
+- Added pagination support to `GET /notes/` with `skip` and `limit`.
+- Added `order_by=created_at` support to `GET /notes/`.
+- Kept query-building logic in `app/crud.py` and kept the notes router thin.
+- Confirmed the current suite passes with `19 passed`.
+
+### Current testing snapshot
+
+- `tests/test_users.py` still covers registration, duplicate username failure, login success, and login failure.
+- `tests/test_notes.py` now also covers the current weather-filtering and pagination slice.
+- `tests/test_notes_authorization.py` continues to cover authenticated update/delete and non-owner authorization failures.
+
+### Next focus
+
+1. Improve settings and environment separation if needed.
+2. Consider whether test setup should later run through Alembic migrations too.
+
+## 2026-03-28
+
+### Stage 5 cleanup completed
+
+- Added note-list sorting support for `order_by=created_at`.
+- Kept request validation in the notes router with `Literal["created_at"]`.
+- Kept SQL ordering logic in `app/crud.py` with SQLAlchemy `order_by(...)`.
+- Moved `database_url` into `app/settings.py` so DB config now lives with the rest of the app settings.
+
+### Test setup now runs through Alembic
+
+- Updated `tests/conftest.py` so each test recreates `test.db`, runs `alembic upgrade head`, and then serves requests through the test DB override.
+- This replaces the older `Base.metadata.create_all(...)` test setup.
+- The change makes test schema creation follow the same migration workflow as the main app database.
+
+### Migration issue found and fixed
+
+- Switching tests to Alembic exposed that the initial migration file was empty for a fresh database build.
+- Updated `8fbaab022864_initial_schema.py` so the baseline migration creates `users` and `notes`.
+- Kept `259b5dd3d9d6_add_summary_to_notes.py` as the follow-up migration that adds `summary`.
+- Verified both `database.db` and `test.db` track revision `259b5dd3d9d6` through the `alembic_version` table.
+
+### Practical lesson
+
+- Once Alembic is introduced as the schema workflow, tests should strongly consider using Alembic too.
+- Otherwise, `create_all()` can hide migration-history problems by creating tables directly from models instead of from revision files.
+
+### Current project status
+
+- The current roadmap slice is complete for this learning project.
+- The project now includes auth, authorization, public note reads, protected note writes, query improvements, centralized settings, Alembic migrations, and Alembic-based test setup.

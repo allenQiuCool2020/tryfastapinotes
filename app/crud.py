@@ -53,8 +53,13 @@ def create_note(db: Session, note: schemas.NoteCreate, user_id: int):
     return db_note
 
 
-def get_notes(db: Session):
+def get_notes(db: Session, weather: str | None = None, skip: int = 0, limit: int = 5, order_by: str = "created_at"):
     stmt = select(models.Note)
+    if weather is not None:
+        stmt = stmt.where(models.Note.weather == weather)
+    if order_by == "created_at":
+        stmt = stmt.order_by(models.Note.created_at)
+    stmt = stmt.offset(skip).limit(limit)
     return db.scalars(stmt).all()
     
 

@@ -93,7 +93,7 @@ This project uses FastAPI with a simple layered structure.
 
 ## Current Position
 
-- Current stage: Stage 4 migrations completed for the current learning scope
+- Current stage: Stage 5 query improvements completed for the current learning scope
 - Current checkpoint:
   - Implemented so far:
     - user registration exists
@@ -115,13 +115,18 @@ This project uses FastAPI with a simple layered structure.
     - an initial Alembic baseline migration exists
     - a follow-up Alembic migration added `summary` to `notes`
     - app startup no longer relies on `create_all()` for the main database
+    - `GET /notes/` supports optional `weather` filtering
+    - `GET /notes/` supports pagination with `skip` and `limit`
+    - tests cover note-list filtering and pagination for the current Stage 5 slice
   - Stage status:
     - Stage 2 features are implemented
     - Stage 1 feature cleanup is aligned
     - Stage 3 testing is aligned with the current learning scope
     - Stage 4 migration learning goals are aligned with the current learning scope
+    - Stage 5 query improvements are aligned with the current learning scope
   - Next focus:
-    - Stage 5 query improvements
+    - optional sorting for note lists
+    - settings and environment separation cleanup as needed
     - optional cleanup of test-database setup if migration-based tests are desired later
 
 ## Stage 1: Finish The Notes App Properly
@@ -228,6 +233,13 @@ Current status for Stage 4:
 - Improve settings and environment separation as needed.
 - Add logging if useful.
 - Optionally add Docker or other deployment-oriented tooling later.
+
+Current status for Stage 5:
+- implemented for the current roadmap scope
+- `GET /notes/` now accepts optional `weather`, `skip`, and `limit` query parameters
+- filtering and pagination query construction lives in `app/crud.py`
+- the route in `app/routers/notes.py` stays thin and passes query parameters down to CRUD
+- tests in `tests/test_notes.py` now cover the current filtering and pagination slice
 
 ## Stage 6: Build A Second Backend Project
 

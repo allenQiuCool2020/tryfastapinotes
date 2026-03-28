@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-
+from typing import Annotated, Literal
 from app import crud, models, schemas
 from app.database import get_db
 from app.routers.auth import get_current_user
@@ -17,8 +17,8 @@ def create_note(
     return crud.create_note(db=db, note=note, user_id=current_user.id)
 
 @router.get("/", response_model=list[schemas.NoteRead])
-def read_notes(db: Session = Depends(get_db)):
-    notes = crud.get_notes(db=db)
+def read_notes(db: Session = Depends(get_db), weather: str | None = None, skip: int = 0, limit: int = 5, order_by: Literal["created_at"] = "created_at"):
+    notes = crud.get_notes(db=db, weather=weather, skip=skip, limit=limit, order_by=order_by)
     return notes
     
 

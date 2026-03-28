@@ -34,4 +34,4 @@ This project does not currently use a numeric study level system. Keep the mode 
 - Architectural mindsets such as schema/router/CRUD responsibilities should also be documented in `AGENTS.md`, not here.
 - The current preferred command-style switch is the simple study toggle, not a numeric study level system.
 - If roadmap priorities change during learning, update `AGENTS.md` rather than expanding this file into project documentation.
-- Current roadmap note: Stage 4 Alembic work is complete for the current learning scope, and Stage 5 is the next focus in `AGENTS.md`.
+- Current roadmap note: Stage 5 query-improvement work is complete for the current learning scope, and the next focus lives in `AGENTS.md`.
