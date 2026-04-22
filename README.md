@@ -20,6 +20,56 @@ A small FastAPI notes API for learning layered backend structure, authentication
 - owner-only note update and delete
 - JWT-based login
 
+## Frontend
+
+- A Next.js frontend now lives in [frontend](/Users/allenqiu/Dev/tryfastapinotes/frontend).
+- The frontend uses:
+  - Next.js App Router
+  - TypeScript
+  - Tailwind CSS
+  - TanStack Query
+  - React Hook Form + Zod
+- The frontend expects `NEXT_PUBLIC_API_BASE_URL` to point at the FastAPI app.
+
+### Run the full stack locally
+
+1. Start the FastAPI app:
+
+```bash
+uv run uvicorn app.main:app --reload
+```
+
+2. In a second terminal, prepare the frontend env file:
+
+```bash
+cd frontend
+cp .env.example .env.local
+```
+
+3. Install frontend dependencies:
+
+```bash
+npm install
+```
+
+4. Start the frontend:
+
+```bash
+npm run dev
+```
+
+5. Open `http://localhost:3000`.
+
+### Frontend pages
+
+- `/` home page with recent public notes
+- `/notes` public note list with weather filter and pagination
+- `/notes/[id]` public note detail page
+- `/register` account creation
+- `/login` login with FastAPI form-encoded auth
+- `/notes/new` authenticated note creation
+- `/notes/[id]/edit` owner-only note editing
+
 ## Project Conventions
 
 - routers handle request flow, auth, permissions, and HTTP errors

@@ -1,7 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException,status
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from app import crud, schemas
+from app import crud, models, schemas
 from app.database import get_db
+from app.routers.auth import get_current_user
 
 router = APIRouter(prefix="/users", tags=["users"])
 
@@ -12,6 +13,11 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     if user_check is not None:
         raise HTTPException(status_code=400, detail="Username already registered")
     return crud.create_user(db=db, user=user)
+
+
+@router.get("/me/", response_model=schemas.UserRead)
+def read_current_user(current_user: models.User = Depends(get_current_user)):
+    return current_user
 
 
 @router.get("/{user_id}", response_model=schemas.UserRead)

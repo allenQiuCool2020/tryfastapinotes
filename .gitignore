@@ -205,3 +205,17 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# Project-specific local data
+database.db
+test.db
+*.db-journal
+
+# Local planning notes
+plan.md
+
+# Frontend generated files
+frontend/node_modules/
+frontend/.next/
+frontend/.env.local
+frontend/coverage/

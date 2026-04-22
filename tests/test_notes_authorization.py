@@ -97,3 +97,26 @@ def test_non_owner_cannot_delete_note(client):
     response = client.delete("/notes/1", headers={"Authorization": f"Bearer {token2}"})
     assert response.status_code == 403
     assert response.json() == {"detail": "Not authorized to delete this note"}
+
+
+def test_update_note_persists_summary(client):
+    response = client.post("/users/", json={"username": "testuser", "password": "testpassword"})
+    assert response.status_code == 201
+    response = client.post("/auth/login", data={"username": "testuser", "password": "testpassword"})
+    assert response.status_code == 200
+    token = response.json()["access_token"]
+
+    response = client.post(
+        "/notes/",
+        json={"title": "Test Note", "content": "This is a test note.", "summary": "First summary"},
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert response.status_code == 201
+
+    response = client.patch(
+        "/notes/1",
+        json={"summary": "Updated summary"},
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert response.status_code == 200
+    assert response.json()["summary"] == "Updated summary"

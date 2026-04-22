@@ -34,3 +34,16 @@ def test_user_creation_duplicate_check(client):
     response = client.post("/users/", json={"username": "testuser", "password": "testpassword"})
     assert response.status_code == 400
     assert response.json() == {"detail": "Username already registered"}
+
+
+def test_read_current_user(client):
+    response = client.post("/users/", json={"username": "testuser", "password": "testpassword"})
+    assert response.status_code == 201
+
+    response = client.post("/auth/login", data={"username": "testuser", "password": "testpassword"})
+    assert response.status_code == 200
+    token = response.json()["access_token"]
+
+    response = client.get("/users/me/", headers={"Authorization": f"Bearer {token}"})
+    assert response.status_code == 200
+    assert response.json() == {"id": 1, "username": "testuser"}

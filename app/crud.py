@@ -3,7 +3,7 @@ from datetime import datetime, UTC
 from sqlalchemy.orm import Session
 from app import models, schemas
 from app.security import DUMMY_HASH, get_password_hash, verify_password
-from sqlalchemy import select
+from sqlalchemy import desc, select
 
 def get_user(db: Session, user_id: int):
     stmt = select(models.User).where(models.User.id == user_id)
@@ -58,7 +58,7 @@ def get_notes(db: Session, weather: str | None = None, skip: int = 0, limit: int
     if weather is not None:
         stmt = stmt.where(models.Note.weather == weather)
     if order_by == "created_at":
-        stmt = stmt.order_by(models.Note.created_at)
+        stmt = stmt.order_by(desc(models.Note.created_at))
     stmt = stmt.offset(skip).limit(limit)
     return db.scalars(stmt).all()
     
@@ -78,6 +78,8 @@ def update_note(db: Session, note_id: int, note_update: schemas.NoteUpdate):
         db_note.content = note_update.content
     if note_update.weather is not None:
         db_note.weather = note_update.weather
+    if note_update.summary is not None:
+        db_note.summary = note_update.summary
     db.commit()
     db.refresh(db_note)
     return db_note
